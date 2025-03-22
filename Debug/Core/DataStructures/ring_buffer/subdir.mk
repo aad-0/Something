@@ -1,0 +1,27 @@
+################################################################################
+# Automatically-generated file. Do not edit!
+# Toolchain: GNU Tools for STM32 (12.3.rel1)
+################################################################################
+
+# Add inputs and outputs from these tool invocations to the build variables 
+C_SRCS += \
+../Core/DataStructures/ring_buffer/ring_buffer.c 
+
+OBJS += \
+./Core/DataStructures/ring_buffer/ring_buffer.o 
+
+C_DEPS += \
+./Core/DataStructures/ring_buffer/ring_buffer.d 
+
+
+# Each subdirectory must supply rules for building sources it contributes
+Core/DataStructures/ring_buffer/%.o Core/DataStructures/ring_buffer/%.su Core/DataStructures/ring_buffer/%.cyclo: ../Core/DataStructures/ring_buffer/%.c Core/DataStructures/ring_buffer/subdir.mk
+	arm-none-eabi-gcc "$<" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -DSTM32_THREAD_SAFE_STRATEGY=2 -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Core/ThreadSafe -I"/home/aad/cenkerisiktim/gen0/Drivers/User/UartSlave/inc" -I"/home/aad/cenkerisiktim/gen0/Core/DataStructures/ring_buffer" -I../USB_DEVICE/App -I../USB_DEVICE/Target -I../Middlewares/ST/STM32_USB_Device_Library/Core/Inc -I../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "$@"
+
+clean: clean-Core-2f-DataStructures-2f-ring_buffer
+
+clean-Core-2f-DataStructures-2f-ring_buffer:
+	-$(RM) ./Core/DataStructures/ring_buffer/ring_buffer.cyclo ./Core/DataStructures/ring_buffer/ring_buffer.d ./Core/DataStructures/ring_buffer/ring_buffer.o ./Core/DataStructures/ring_buffer/ring_buffer.su
+
+.PHONY: clean-Core-2f-DataStructures-2f-ring_buffer
+
