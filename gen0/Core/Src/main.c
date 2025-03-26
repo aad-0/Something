@@ -119,8 +119,7 @@ int main(void)
 //					NULL
 //			};
 	UartSlaveAccel_Init (& uartSlaveAccelDevice, & uartSlaveAccelDeviceIoContext, 0x16U);
-	uartSlaveDevices [0].Parent = & uartSlaveAccelDevice.UartSlaveInstance;
-	uartSlaveDevices [0].Child = & uartSlaveAccelDevice;
+	uartSlaveDevices [0] = & uartSlaveAccelDevice;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
