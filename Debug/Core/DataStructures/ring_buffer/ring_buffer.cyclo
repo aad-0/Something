@@ -1,4 +1,0 @@
-../Core/DataStructures/ring_buffer/ring_buffer.c:22:9:RingBuffer_Init	1
-../Core/DataStructures/ring_buffer/ring_buffer.c:40:9:RingBuffer_DeInit	1
-../Core/DataStructures/ring_buffer/ring_buffer.c:53:10:RingBuffer_Write_XBit	2
-../Core/DataStructures/ring_buffer/ring_buffer.c:73:10:RingBuffer_Read_XBit	2

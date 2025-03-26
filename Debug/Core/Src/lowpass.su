@@ -1,2 +1,0 @@
-../Core/Src/lowpass.c:3:9:lowpass_Init	16	static
-../Core/Src/lowpass.c:11:7:lowpass_update	16	static

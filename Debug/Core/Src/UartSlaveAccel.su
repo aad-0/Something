@@ -1,2 +1,0 @@
-../Core/Src/UartSlaveAccel.c:15:9:UartSlaveAccel_Init	24	static
-../Core/Src/UartSlaveAccel.c:34:6:UartSlaveAccel_StateMachine	24	static

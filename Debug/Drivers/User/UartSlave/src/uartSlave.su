@@ -1,2 +1,0 @@
-../Drivers/User/UartSlave/src/uartSlave.c:8:9:UartSlave_Init	24	static
-../Drivers/User/UartSlave/src/uartSlave.c:18:10:UartSlave_setCommandMode	16	static
