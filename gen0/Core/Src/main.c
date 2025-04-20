@@ -75,6 +75,9 @@ uint8_t tim9_elapsed = 0;
 float time;
 
 
+volatile uint32_t * const pTim2Counter = (volatile uint32_t *) 0x40000024;
+uint32_t tim2Counter;
+
 UartSlave_TypeDef * uartSlaveDevices [UARTSLAVE_DEVICE_COUNT];
 uint32_t uartSlaveDeviceIdx;
 UartSlaveAccel_TypeDef uartSlaveAccelDevice;
@@ -147,12 +150,15 @@ int main(void)
   MX_SPI1_Init();
   MX_TIM9_Init();
   MX_USB_DEVICE_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 
   BSP_ACCELERO_Init();
   HAL_TIM_Base_Init(&htim9);
   HAL_TIM_Base_Start_IT(&htim9);
   accelId = BSP_ACCELERO_ReadID();
+
+  HAL_TIM_Encoder_Start(&htim2, TIM_CHANNEL_ALL);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -163,6 +169,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  tim2Counter = * pTim2Counter;
     if (1 == tim9_elapsed)
     {
 //        BSP_ACCELERO_GetXYZ(&accelXYZ[0]);

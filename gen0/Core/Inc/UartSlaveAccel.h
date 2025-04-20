@@ -17,6 +17,7 @@ typedef struct uart_slave_message_s
 	uint16_t u16SlaveId;
 	uint8_t u8Command;
 	uint32_t u32Tick;
+	uint16_t u16Encoder;
 //	uint16_t u16AxisX;
 //	uint16_t u16AxisY;
 //	uint16_t u16AxisZ;
