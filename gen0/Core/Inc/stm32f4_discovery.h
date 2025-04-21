@@ -159,7 +159,8 @@ typedef enum
    stuck if the SPI communication is corrupted.
    You may modify these timeout values depending on CPU frequency and application
    conditions (interrupts routines ...). */   
-#define SPIx_TIMEOUT_MAX                            0x1000 /*<! The value of the maximal timeout for BUS waiting loops */
+// #define SPIx_TIMEOUT_MAX                            0x1000 /*<! The value of the maximal timeout for BUS waiting loops */
+#define SPIx_TIMEOUT_MAX                            0x10 /*<! The value of the maximal timeout for BUS waiting loops */
 
 
 /*############################# I2C1 #########################################*/
