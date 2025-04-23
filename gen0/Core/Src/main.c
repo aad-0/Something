@@ -150,7 +150,7 @@ int main(void)
   MX_SPI1_Init();
   MX_TIM9_Init();
   MX_USB_DEVICE_Init();
-  MX_TIM2_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
 
   BSP_ACCELERO_Init();
@@ -158,7 +158,7 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim9);
   accelId = BSP_ACCELERO_ReadID();
 
-  HAL_TIM_Encoder_Start(&htim2, TIM_CHANNEL_ALL);
+  HAL_TIM_Encoder_Start(&htim1, TIM_CHANNEL_1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
