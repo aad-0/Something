@@ -3,9 +3,12 @@
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 #include "comm.h"
 
 #define BUFFER_SIZE 512 // A safe size for receiving buffer
+
+FILE* csv_file = NULL;
 
 void parseMessage(uint8_t *buffer)
 {
@@ -42,6 +45,10 @@ void parseMessage(uint8_t *buffer)
     // }
     // printf("\n");
 
+    // Get current timestamp for CSV logs
+    time_t now;
+    time(&now);
+
     // Optionally: you can now cast payload into structures depending on the command
     if ((command & ComDefCommandModeMask) == ComDefCommandMode)
     {
@@ -55,6 +62,13 @@ void parseMessage(uint8_t *buffer)
         // printf("IMU X: %.2f, Y: %.2f, Z: %.2f\n", imu->fX, imu->fY, imu->fZ);
         fprintf(stdout, "IMU X: %.2f, Y: %.2f, Z: %.2f\n", imu->fX, imu->fY, imu->fZ);
         fflush(stdout);
+        
+        // Write to CSV if file is open
+        if (csv_file != NULL) {
+            fprintf(csv_file, "%ld,%.6f,%.6f,%.6f\n", now, imu->fX, imu->fY, imu->fZ);
+            fflush(csv_file);
+        }
+        
         // printf("Angle: %u\n", angle->u16Angle);
     }
     else if ((command & ComDefCommandModeMask) == ComDefCommandSamplingRate)
@@ -62,21 +76,40 @@ void parseMessage(uint8_t *buffer)
         ComDefImu_TypeDef *imu = (ComDefImu_TypeDef *)payload;
         fprintf(stdout, "IMU X: %.2f, Y: %.2f, Z: %.2f\n", imu->fX, imu->fY, imu->fZ);
         fflush(stdout);
+        
+        // Write to CSV if file is open
+        if (csv_file != NULL) {
+            fprintf(csv_file, "%ld,%.6f,%.6f,%.6f\n", now, imu->fX, imu->fY, imu->fZ);
+            fflush(csv_file);
+        }
     }
 }
 
 int main(int argc, char **argv)
 {
-    if (argc != 2)
+    if (argc < 2 || argc > 3)
     {
-        fprintf(stderr, "Usage: %s <UART device>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <UART device> [csv_output_file]\n", argv[0]);
         return -1;
+    }
+
+    // If CSV filename was provided, open the file
+    if (argc == 3) {
+        csv_file = fopen(argv[2], "w");
+        if (csv_file == NULL) {
+            fprintf(stderr, "Failed to open CSV file for writing: %s\n", argv[2]);
+            return -1;
+        }
+        // Write CSV header
+        fprintf(csv_file, "timestamp,x,y,z\n");
+        fprintf(stdout, "Logging data to CSV file: %s\n", argv[2]);
     }
 
     UartInstance_TypeDef uart;
     if (uart_Init(&uart, argv[1], 115200, 1000) != 0)
     {
         fprintf(stderr, "Failed to initialize UART.\n");
+        if (csv_file) fclose(csv_file);
         return -1;
     }
 
@@ -125,6 +158,6 @@ int main(int argc, char **argv)
     }
 
     uartClose(&uart);
+    if (csv_file) fclose(csv_file);
     return 0;
 }
-
