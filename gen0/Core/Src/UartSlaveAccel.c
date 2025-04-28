@@ -56,6 +56,7 @@ void UartSlaveAccel_StateMachine (void * pSlaveDevice)
     pPayload->fX = pDevice->pi16AccelXYZ[0];
     pPayload->fY = pDevice->pi16AccelXYZ[1];
     pPayload->fZ = pDevice->pi16AccelXYZ[2];
+	pPayload->u32Tick = HAL_GetTick();
 ////
 //    txMessage.u16AxisX = pDevice->LowpassAccelX.out;
 //    txMessage.u16AxisY = pDevice->LowpassAccelY.out;

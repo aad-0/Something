@@ -20,9 +20,9 @@ def load_accelerometer_data(csv_file):
     df = pd.read_csv(csv_file)
     
     # Extract acceleration data (values are in nano units, 10^-9)
-    x_nano = df['AxisX'].values
-    y_nano = df['AxisY'].values
-    z_nano = df['AxisZ'].values
+    x_nano = df['x'].values
+    y_nano = df['y'].values
+    z_nano = df['z'].values
     
     # Convert from nano units to standard units (multiply by 10^-9)
     conversion_factor = 1e-3
@@ -128,24 +128,37 @@ def plot_fft_results(freqs, magnitude, peak_freqs, peak_mags, output_file=None):
     if output_file is None:
         output_file = os.path.join(OUTPUT_DIR, "fft_results.png")
         
-    plt.figure(figsize=(12, 6))
+    # Create a wider figure for better x-axis visibility
+    plt.figure(figsize=(18, 8))
     
     # Limit to 0-50Hz for better visualization of relevant frequencies
     max_freq = 50  # Hz
     mask = freqs <= max_freq
     
-    plt.plot(freqs[mask], magnitude[mask], 'b-', alpha=0.7)
+    plt.plot(freqs[mask], magnitude[mask], 'b-', alpha=0.7, linewidth=1.5)
     
-    # Plot peak frequencies
+    # Plot peak frequencies with larger markers
     for f, m in zip(peak_freqs, peak_mags):
         if f <= max_freq:
-            plt.plot(f, m, 'ro')
-            plt.text(f, m*1.1, f"{f:.2f} Hz", ha='center')
+            plt.plot(f, m, 'ro', markersize=8)
+            plt.text(f, m*1.1, f"{f:.2f} Hz", ha='center', fontsize=10, 
+                    bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=2))
     
-    plt.title('FFT Analysis of Resultant Acceleration')
-    plt.xlabel('Frequency (Hz)')
-    plt.ylabel('Magnitude')
-    plt.grid(True)
+    plt.title('FFT Analysis of Resultant Acceleration', fontsize=14)
+    plt.xlabel('Frequency (Hz)', fontsize=12)
+    plt.ylabel('Magnitude', fontsize=12)
+    plt.grid(True, linestyle='--', alpha=0.7)
+    
+    # Improve x-axis readability
+    plt.xlim(0, max_freq)
+    
+    # Add more x-axis ticks and increase font size
+    plt.xticks(np.arange(0, max_freq+1, 2.5), fontsize=10)
+    plt.yticks(fontsize=10)
+    
+    # Add minor ticks for even more precision
+    plt.minorticks_on()
+    plt.grid(True, which='minor', linestyle=':', alpha=0.4)
     
     plt.tight_layout()
     plt.savefig(output_file, dpi=300)
@@ -196,7 +209,7 @@ def main(**kwargs):
     print(f"Processed data (with resultant) saved to {processed_file}")
     
     # Sample rate (assumed from DATA_RATE_HZ in your code)
-    sample_rate = 100.0  # Hz
+    sample_rate = 1600.0  # Hz
     
     # Plot time domain data
     plot_time_domain(df)

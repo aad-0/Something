@@ -53,19 +53,21 @@ void parseMessage(uint8_t *buffer)
     if ((command & ComDefCommandModeMask) == ComDefCommandMode)
     {
         ComDefMode_TypeDef *mode = (ComDefMode_TypeDef *)payload;
-        // printf("Mode: %u\n", mode->u8Mode);
+        fprintf(stdout, "Mode: %u, Tick: %u\n", mode->u8Mode, mode->u32Tick);
+        fflush(stdout);
     }
     else if ((command & ComDefCommandModeMask) == ComDefCommandAngle)
     {
         ComDefAngle_TypeDef *angle = (ComDefImu_TypeDef *)payload;
         ComDefImu_TypeDef *imu = (ComDefImu_TypeDef *)payload;
-        // printf("IMU X: %.2f, Y: %.2f, Z: %.2f\n", imu->fX, imu->fY, imu->fZ);
-        fprintf(stdout, "IMU X: %.2f, Y: %.2f, Z: %.2f\n", imu->fX, imu->fY, imu->fZ);
+        fprintf(stdout, "IMU X: %.2f, Y: %.2f, Z: %.2f, Tick: %u\n", 
+                imu->fX, imu->fY, imu->fZ, imu->u32Tick);
         fflush(stdout);
         
         // Write to CSV if file is open
         if (csv_file != NULL) {
-            fprintf(csv_file, "%ld,%.6f,%.6f,%.6f\n", now, imu->fX, imu->fY, imu->fZ);
+            fprintf(csv_file, "%ld,%u,%.6f,%.6f,%.6f\n", 
+                    now, imu->u32Tick, imu->fX, imu->fY, imu->fZ);
             fflush(csv_file);
         }
         
@@ -74,12 +76,14 @@ void parseMessage(uint8_t *buffer)
     else if ((command & ComDefCommandModeMask) == ComDefCommandSamplingRate)
     {
         ComDefImu_TypeDef *imu = (ComDefImu_TypeDef *)payload;
-        fprintf(stdout, "IMU X: %.2f, Y: %.2f, Z: %.2f\n", imu->fX, imu->fY, imu->fZ);
+        fprintf(stdout, "IMU X: %.2f, Y: %.2f, Z: %.2f, Tick: %u\n", 
+                imu->fX, imu->fY, imu->fZ, imu->u32Tick);
         fflush(stdout);
         
         // Write to CSV if file is open
         if (csv_file != NULL) {
-            fprintf(csv_file, "%ld,%.6f,%.6f,%.6f\n", now, imu->fX, imu->fY, imu->fZ);
+            fprintf(csv_file, "%ld,%u,%.6f,%.6f,%.6f\n", 
+                    now, imu->u32Tick, imu->fX, imu->fY, imu->fZ);
             fflush(csv_file);
         }
     }
@@ -100,8 +104,8 @@ int main(int argc, char **argv)
             fprintf(stderr, "Failed to open CSV file for writing: %s\n", argv[2]);
             return -1;
         }
-        // Write CSV header
-        fprintf(csv_file, "timestamp,x,y,z\n");
+        // Write CSV header - now including tick column
+        fprintf(csv_file, "timestamp,tick,x,y,z\n");
         fprintf(stdout, "Logging data to CSV file: %s\n", argv[2]);
     }
 
