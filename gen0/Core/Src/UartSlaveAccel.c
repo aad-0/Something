@@ -9,13 +9,14 @@
 #include "stm32f4_discovery.h"
 #include "stm32f4_discovery_accelerometer.h"
 
+#include "comm.h"
+
 void UartSlaveAccel_StateMachine ();
 
 
 int32_t UartSlaveAccel_Init (UartSlaveAccel_TypeDef * pInit, UartSlaveIo_TypeDef * pIoContext, uint16_t SlaveId)
 {
 	UartSlave_Init (& pInit->UartSlaveInstance, pIoContext, SlaveId);
-	pInit->u32AxisMask = UARTSLAVEACCEL_AXISMASK_GETX | UARTSLAVEACCEL_AXISMASK_GETY | UARTSLAVEACCEL_AXISMASK_GETZ;
 
 	lowpass_Init(&pInit->LowpassAccelX, 0.02);
 	lowpass_Init(&pInit->LowpassAccelY, 0.02);
@@ -29,8 +30,8 @@ int32_t UartSlaveAccel_Init (UartSlaveAccel_TypeDef * pInit, UartSlaveIo_TypeDef
 	return 0;
 }
 
+static ComDef_xpu8DeclareBuffer(txMessage, ComDefImu_TypeDef);
 
-static UartSlaveMessage_TypeDef txMessage;
 void UartSlaveAccel_StateMachine (void * pSlaveDevice)
 {
 	UartSlaveAccel_TypeDef * pDevice = (UartSlaveAccel_TypeDef *) pSlaveDevice;
@@ -42,14 +43,19 @@ void UartSlaveAccel_StateMachine (void * pSlaveDevice)
     lowpass_update(&pDevice->LowpassAccelZ, (float)pDevice->pi16AccelXYZ[2]);
 
 //    static UartSlaveMessage_TypeDef txMessage;
-    txMessage.u8Heading = 0xAA;
-    txMessage.u16SlaveId = pDevice->UartSlaveInstance.u16SlaveId;
-    txMessage.u8Command = pDevice->UartSlaveInstance.u32CommandMode;
-    txMessage.u32Tick = HAL_GetTick();
+    ComDef_xu8GetHeading(&txMessage) = 0xAA;
+    ComDef_xu8GetCommand(&txMessage) = ComDef_xu8CommandMask(ComDefCommandAngle, ComDefCommandMaskRet);
+    ComDef_xu16GetPayloadLength(&txMessage) = sizeof (ComDefImu_TypeDef);
+    ComDef_xu8GetCrc(&txMessage) = 0xFA;
+    ComDef_xu8GetEnd(&txMessage) = 0xBA;
+    ComDefImu_TypeDef * const pPayload = & ComDef_xpu8GetPayload(&txMessage);
+    //txMessage.u16SlaveId = pDevice->UartSlaveInstance.u16SlaveId;
+    //txMessage.u8Command = pDevice->UartSlaveInstance.u32CommandMode;
+    //txMessage.u32Tick = HAL_GetTick();
 
-    txMessage.u16AxisX = pDevice->pi16AccelXYZ[0];
-    txMessage.u16AxisY = pDevice->pi16AccelXYZ[1];
-    txMessage.u16AxisZ = pDevice->pi16AccelXYZ[2];
+    pPayload->fX = pDevice->pi16AccelXYZ[0];
+    pPayload->fY = pDevice->pi16AccelXYZ[1];
+    pPayload->fZ = pDevice->pi16AccelXYZ[2];
 ////
 //    txMessage.u16AxisX = pDevice->LowpassAccelX.out;
 //    txMessage.u16AxisY = pDevice->LowpassAccelY.out;
