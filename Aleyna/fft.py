@@ -25,7 +25,7 @@ def load_accelerometer_data(csv_file):
     z_nano = df['AxisZ'].values
     
     # Convert from nano units to standard units (multiply by 10^-9)
-    conversion_factor = 1e-9
+    conversion_factor = 1e-3
     
     x = x_nano * conversion_factor
     y = y_nano * conversion_factor
