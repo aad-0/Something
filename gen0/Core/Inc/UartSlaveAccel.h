@@ -16,6 +16,7 @@ typedef struct uart_slave_accel_s
 {
 	UartSlave_TypeDef UartSlaveInstance;
 	int16_t pi16AccelXYZ [3];
+	int16_t pi16AccelXYZOffset [3];
 
 	Lowpass_TypeDef LowpassAccelX;
 	Lowpass_TypeDef LowpassAccelY;

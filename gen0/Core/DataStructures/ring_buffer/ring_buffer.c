@@ -76,8 +76,11 @@ uint32_t RingBuffer_Read_XBit (RingBuffer_TypeDef * const pInit,
 {
 	uint32_t i;
 	for (i = 0; i < Sizeof; ++i)
-				( (uint8_t *)(pData) ) [i] =
-						( (uint8_t *)(pInit->pBuffer) )[(pInit->ReadIdx +i) % (pInit->Length)];
+	{
+		( (uint8_t *)(pData) ) [i] =
+				( (uint8_t *)(pInit->pBuffer) )[(pInit->ReadIdx +i) % (pInit->Length)];
+
+	}
 
   pInit->ReadIdx = (pInit->ReadIdx +Sizeof) % (pInit->Length);
 	return pInit->ReadIdx;

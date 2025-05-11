@@ -72,6 +72,7 @@ uint32_t idxUartSlave;
 uint32_t start_tick, end_tick;
 
 uint8_t tim9_elapsed = 0;
+uint8_t cdc_data_received = 0;
 float time;
 
 
@@ -170,7 +171,8 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 	  tim2Counter = * pTim2Counter;
-    if (1 == tim9_elapsed)
+
+    if (tim9_elapsed || cdc_data_received)
     {
 //        BSP_ACCELERO_GetXYZ(&accelXYZ[0]);
 //
@@ -180,13 +182,12 @@ int main(void)
 //        end_tick = DWT->CYCCNT;
 //        time = (float)(end_tick-   start_tick)/(SystemCoreClock/1000.0);
 
-    	xvUartSlaveSetTxFlag(&uartSlaveAccelDevice.UartSlaveInstance, UARTSLAVE_ACCEL_FLAG_TX);
     	tim9_elapsed = 0;
-    }
+    	cdc_data_received = 0;
+    	uartSlaveDevices [0] -> pfvStateMachine (uartSlaveDevices [0] );
 
-    for (idxUartSlave = 0; idxUartSlave < UARTSLAVE_DEVICE_COUNT; ++idxUartSlave)
-    {
-    	uartSlaveDevices [idxUartSlave] -> pfvStateMachine (uartSlaveDevices [idxUartSlave] );
+
+
     }
     //HAL_Delay(1500);
   }
@@ -260,6 +261,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	  tim9_elapsed = 1;
   }
 
+}
+
+void USB_CDC_RxHandler(uint8_t*pBuffer, uint32_t Length)
+{
+	// Only uart Slave is in cdc
+	RingBuffer_Write_XBit(&uartSlaveAccelDevice.UartSlaveInstance.rxBufferManager, pBuffer, Length);
+//	tim9_elapsed = 1;
+	cdc_data_received = 1;
 }
 
 /* USER CODE END 4 */
