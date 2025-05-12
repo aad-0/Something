@@ -9,7 +9,11 @@
 #include "stm32f4_discovery.h"
 #include "stm32f4_discovery_accelerometer.h"
 
+#include "main.h"
 #include "comm.h"
+
+extern TIM_HandleTypeDef htim1;
+
 
 void UartSlaveAccel_StateMachine();
 
@@ -41,12 +45,13 @@ void UartSlaveAccel_StateMachine(void *pSlaveDevice) {
 	static uint8_t synced = 0;
 	static uint8_t buffer[BUFFSIZE];
 	static uint32_t bufferOffset = 0;
+	static uint32_t imu_tick = 0;
 	uint8_t  const * pBuffer = &buffer[bufferOffset];
 	uint32_t offset = 0;
 
 
 	// get Synced
-	uint32_t ringBufferLength = (pDevice->UartSlaveInstance.rxBufferManager.WriteIdx >= pDevice->UartSlaveInstance.rxBufferManager.ReadIdx)
+	const uint32_t ringBufferLength = (pDevice->UartSlaveInstance.rxBufferManager.WriteIdx >= pDevice->UartSlaveInstance.rxBufferManager.ReadIdx)
                 ? (pDevice->UartSlaveInstance.rxBufferManager.WriteIdx - pDevice->UartSlaveInstance.rxBufferManager.ReadIdx)
                 : (pDevice->UartSlaveInstance.rxBufferManager.Length - pDevice->UartSlaveInstance.rxBufferManager.ReadIdx + pDevice->UartSlaveInstance.rxBufferManager.WriteIdx);
 
@@ -132,7 +137,7 @@ void UartSlaveAccel_StateMachine(void *pSlaveDevice) {
 				// get accels
 				// BSP_ACCELERO_GetXYZ(&pDevice->pi16AccelXYZ[0]);
 				{
-				    static int8_t first = 1;
+				    static int8_t first = 0;
 					if (first)
 					{
 						BSP_ACCELERO_GetXYZ(&pDevice->pi16AccelXYZOffset[0]);
@@ -169,6 +174,9 @@ void UartSlaveAccel_StateMachine(void *pSlaveDevice) {
 				//txMessage.u16SlaveId = pDevice->UartSlaveInstance.u16SlaveId;
 				//txMessage.u8Command = pDevice->UartSlaveInstance.u32CommandMode;
 				//txMessage.u32Tick = HAL_GetTick();
+
+				pPayload->Tick = imu_tick ++;
+				pPayload->Encoder = ACCELDEVICE_ENCODER;
 
 				pPayload->fX = (float)pDevice->pi16AccelXYZ[0] - (float)pDevice->pi16AccelXYZOffset[0];
 				pPayload->fY = (float)pDevice->pi16AccelXYZ[1] - (float)pDevice->pi16AccelXYZOffset[1];
