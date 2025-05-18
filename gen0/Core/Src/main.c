@@ -123,7 +123,7 @@ int main(void)
 //					NULL
 //			};
 	UartSlaveAccel_Init (& uartSlaveAccelDevice, & uartSlaveAccelDeviceIoContext, 0x16U);
-	uartSlaveDevices [0] = & uartSlaveAccelDevice;
+	uartSlaveDevices [0] = & uartSlaveAccelDevice.UartSlaveInstance;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -139,6 +139,7 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
+  HAL_RCC_GetHCLKFreq();
   HAL_Delay(1000);
   CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
   DWT->CYCCNT = 0;
@@ -153,7 +154,6 @@ int main(void)
   MX_USB_DEVICE_Init();
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
-
   BSP_ACCELERO_Init();
   HAL_TIM_Base_Init(&htim9);
   HAL_TIM_Base_Start_IT(&htim9);
@@ -186,6 +186,8 @@ int main(void)
     	cdc_data_received = 0;
     	uartSlaveDevices [0] -> pfvStateMachine (uartSlaveDevices [0] );
 
+    	end_tick  = DWT->CYCCNT;
+    	time = (end_tick - start_tick)/(SystemCoreClock/1000.0);
 
 
     }

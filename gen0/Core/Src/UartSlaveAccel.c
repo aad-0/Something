@@ -8,6 +8,7 @@
 
 #include "stm32f4_discovery.h"
 #include "stm32f4_discovery_accelerometer.h"
+#include "timerWrapper.h"
 
 #include "main.h"
 #include "comm.h"
@@ -37,12 +38,12 @@ int32_t UartSlaveAccel_Init(UartSlaveAccel_TypeDef *pInit,
 	return 0;
 }
 
-static ComDef_xpu8DeclareBuffer(txMessage, ComDefImu_TypeDef);
+//static ComDef_xpu8DeclareBuffer(txMessage, ComDefImu_TypeDef);
 
 #define BUFFSIZE 1024
 void UartSlaveAccel_StateMachine(void *pSlaveDevice) {
 	UartSlaveAccel_TypeDef *pDevice = (UartSlaveAccel_TypeDef*) pSlaveDevice;
-	static uint8_t synced = 0;
+	//static uint8_t synced = 0;
 	static uint8_t buffer[BUFFSIZE];
 	static uint32_t bufferOffset = 0;
 	static uint32_t imu_tick = 0;
@@ -55,7 +56,11 @@ void UartSlaveAccel_StateMachine(void *pSlaveDevice) {
                 ? (pDevice->UartSlaveInstance.rxBufferManager.WriteIdx - pDevice->UartSlaveInstance.rxBufferManager.ReadIdx)
                 : (pDevice->UartSlaveInstance.rxBufferManager.Length - pDevice->UartSlaveInstance.rxBufferManager.ReadIdx + pDevice->UartSlaveInstance.rxBufferManager.WriteIdx);
 
-	RingBuffer_Read_XBit(&pDevice->UartSlaveInstance.rxBufferManager, pBuffer, ringBufferLength);
+	// uint32_t RingBuffer_Read_XBit (RingBuffer_TypeDef * const pInit,
+    // void * const pData,
+    // size_t const Sizeof)
+
+	RingBuffer_Read_XBit(&pDevice->UartSlaveInstance.rxBufferManager, (void *) &pBuffer [0], ringBufferLength);
 	while (offset < ringBufferLength && *pBuffer != 0xAA)
 	{
 		pBuffer ++;
@@ -69,7 +74,7 @@ void UartSlaveAccel_StateMachine(void *pSlaveDevice) {
 	}
 	bufferOffset = 0;
 
-	uint32_t calulatedLength = ComDef_xpu32CalculateLength(&buffer);
+	//uint32_t calulatedLength = ComDef_xpu32CalculateLength(&buffer);
 /*	if (abs(pDevice->UartSlaveInstance.rxBufferManager.ReadIdx - pDevice->UartSlaveInstance.rxBufferManager.WriteIdx) <= calulatedLength)
 	{
 		BufferOffset = abs(pBuffer - Buffer);
@@ -80,11 +85,11 @@ void UartSlaveAccel_StateMachine(void *pSlaveDevice) {
 
 	if (ComDef_xu8GetCrc(&buffer) != 0xFA)
 	{
-		synced = 0;
+		//synced = 0;
 		return;
 	}
 
-	synced = 1;
+	//synced = 1;
 
 	// state
 	int8_t reProccess = 0;
@@ -116,7 +121,7 @@ void UartSlaveAccel_StateMachine(void *pSlaveDevice) {
 				break;
 			}
 
-			pDevice->UartSlaveInstance.pIoContext->pfvTx(&CommandModeBuffer,
+			pDevice->UartSlaveInstance.pIoContext->pfvTx( (uint8_t *)&CommandModeBuffer [0],
 					sizeof(CommandModeBuffer));
 
 			break;
@@ -136,23 +141,7 @@ void UartSlaveAccel_StateMachine(void *pSlaveDevice) {
 
 				// get accels
 				// BSP_ACCELERO_GetXYZ(&pDevice->pi16AccelXYZ[0]);
-				{
-				    static int8_t first = 0;
-					if (first)
-					{
-						BSP_ACCELERO_GetXYZ(&pDevice->pi16AccelXYZOffset[0]);
-						pDevice->pi16AccelXYZ[0] = pDevice->pi16AccelXYZOffset[0];
-						pDevice->pi16AccelXYZ[1] = pDevice->pi16AccelXYZOffset[1];
-						pDevice->pi16AccelXYZ[2] = pDevice->pi16AccelXYZOffset[2];
-						first = 0;
-					}
-					else
-					{
-						// get accels
-						BSP_ACCELERO_GetXYZ(&pDevice->pi16AccelXYZ[0]);
-
-					}
-				}
+				BSP_ACCELERO_GetXYZ(&pDevice->pi16AccelXYZ[0]);
 				// update the lowpasses
 				lowpass_update(&pDevice->LowpassAccelX,
 						pDevice->pi16AccelXYZ[0] - pDevice->pi16AccelXYZOffset[0]);
@@ -182,7 +171,7 @@ void UartSlaveAccel_StateMachine(void *pSlaveDevice) {
 				pPayload->fY = (float)pDevice->pi16AccelXYZ[1] - (float)pDevice->pi16AccelXYZOffset[1];
 				pPayload->fZ = (float)pDevice->pi16AccelXYZ[2] - (float)pDevice->pi16AccelXYZOffset[2];
 
-				pDevice->UartSlaveInstance.pIoContext->pfvTx(&CommandImuBuffer,
+				pDevice->UartSlaveInstance.pIoContext->pfvTx((uint8_t *)&CommandImuBuffer [0],
 						sizeof(CommandImuBuffer));
 				break;
 //
@@ -198,14 +187,42 @@ void UartSlaveAccel_StateMachine(void *pSlaveDevice) {
 /////////////////////////////////////////////////////////////////////////
 
 		case (ComDefCommandSamplingRate):
+			ComDef_xpu8DeclareBuffer(CommandSamplingRateBuffer, ComDefSamplingRate_TypeDef);
+
+			ComDef_xu8GetHeading(&CommandSamplingRateBuffer) = 0xAA;
+			ComDef_xu8GetCommand(&CommandSamplingRateBuffer) = ComDef_xu8CommandMask(
+					ComDefCommandSamplingRate, ComDefCommandMaskRet);
+			ComDef_xu16GetPayloadLength(&CommandSamplingRateBuffer) =
+					sizeof(ComDefSamplingRate_TypeDef);
+			ComDef_xu8GetCrc(&CommandSamplingRateBuffer) = 0xFA;
+			ComDef_xu8GetEnd(&CommandSamplingRateBuffer) = 0xBA;
+			ComDefSamplingRate_TypeDef * pPayloadTx_ = (ComDefSamplingRate_TypeDef * )&ComDef_xpu8GetPayload(
+					&CommandSamplingRateBuffer);
+			ComDefSamplingRate_TypeDef *pPayloadRx_ = (ComDefSamplingRate_TypeDef *)&ComDef_xpu8GetPayload(&buffer);
+
+
 			switch (ComDef_xu8GetCommand(&buffer) & ComDefCommandMask) {
 			case (ComDefCommandMaskGet):
+				{
+					uint32_t payingIdeaOfSettingSamplingRateAs16Bit = 0;
+					xu32TimerWrapper_getFreq (ACCELDEVICE_INSTANCE, &payingIdeaOfSettingSamplingRateAs16Bit);
+					pPayloadTx_->u16SamplingRate = (uint16_t)payingIdeaOfSettingSamplingRateAs16Bit;
+				}
 				break;
 			case (ComDefCommandMaskSet):
+				{
+					uint32_t payingIdeaOfSettingSamplingRateAs16Bit = pPayloadRx_->u16SamplingRate;
+					xvTimerWrapper_SetFreq (ACCELDEVICE_INSTANCE, payingIdeaOfSettingSamplingRateAs16Bit);
+					xu32TimerWrapper_getFreq (ACCELDEVICE_INSTANCE, &payingIdeaOfSettingSamplingRateAs16Bit);
+
+					pPayloadTx_->u16SamplingRate = (uint16_t)payingIdeaOfSettingSamplingRateAs16Bit;
+				}
 				break;
 			case (ComDefCommandMaskRet):
 				break;
 			}
+			pDevice->UartSlaveInstance.pIoContext->pfvTx((uint8_t *)&CommandSamplingRateBuffer [0],
+					sizeof(CommandSamplingRateBuffer));
 			break;
 
 /////////////////////////////////////////////////////////////////////////
