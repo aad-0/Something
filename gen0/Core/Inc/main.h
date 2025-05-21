@@ -125,8 +125,8 @@ void USB_CDC_RxHandler(uint8_t*, uint32_t);
 #define MEMS_INT2_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
-#define ACCELDEVICE_ENCODER	(htim1.Instance->CNT)
-#define ACCELDEVICE_INSTANCE	(htim1.Instance)
+#define ACCELDEVICE_ENCODER		(htim2.Instance->CNT)
+#define ACCELDEVICE_INSTANCE 	(htim2.Instance)
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

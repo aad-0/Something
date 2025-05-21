@@ -13,7 +13,7 @@
 #include "main.h"
 #include "comm.h"
 
-extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim2;
 
 
 void UartSlaveAccel_StateMachine();

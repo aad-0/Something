@@ -152,14 +152,15 @@ int main(void)
   MX_SPI1_Init();
   MX_TIM9_Init();
   MX_USB_DEVICE_Init();
-  MX_TIM1_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   BSP_ACCELERO_Init();
   HAL_TIM_Base_Init(&htim9);
   HAL_TIM_Base_Start_IT(&htim9);
   accelId = BSP_ACCELERO_ReadID();
 
-  HAL_TIM_Encoder_Start(&htim1, TIM_CHANNEL_1);
+//  HAL_TIM_Encoder_Start(&htim1, TIM_CHANNEL_1);
+  HAL_TIM_Base_Start(&htim2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -172,7 +173,7 @@ int main(void)
     /* USER CODE BEGIN 3 */
 	  tim2Counter = * pTim2Counter;
 
-    if (tim9_elapsed || cdc_data_received)
+    if (1 || tim9_elapsed || cdc_data_received)
     {
 //        BSP_ACCELERO_GetXYZ(&accelXYZ[0]);
 //
