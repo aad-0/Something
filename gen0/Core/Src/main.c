@@ -173,8 +173,9 @@ int main(void)
     /* USER CODE BEGIN 3 */
 	  tim2Counter = * pTim2Counter;
 
-    if (1 || tim9_elapsed || cdc_data_received)
+    if ( tim9_elapsed || cdc_data_received)
     {
+
 //        BSP_ACCELERO_GetXYZ(&accelXYZ[0]);
 //
 //        lowpass_update(&accelX, (float)accelXYZ[IDX_X]);
@@ -234,7 +235,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV4;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
   {
@@ -260,8 +261,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   if (&htim9 == htim)
   {
 
-  	start_tick = DWT->CYCCNT;
+  	//start_tick = DWT->CYCCNT;
 	  tim9_elapsed = 1;
+	  start_tick = DWT->CYCCNT;
+
   }
 
 }

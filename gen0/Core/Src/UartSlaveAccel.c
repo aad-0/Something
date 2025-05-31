@@ -13,7 +13,7 @@
 #include "main.h"
 #include "comm.h"
 
-extern TIM_HandleTypeDef htim2;
+#include "tim.h"
 
 
 void UartSlaveAccel_StateMachine();
@@ -32,6 +32,7 @@ int32_t UartSlaveAccel_Init(UartSlaveAccel_TypeDef *pInit,
 	pInit->pi16AccelXYZOffset[0] = 0;
 	pInit->pi16AccelXYZOffset[1] = 0;
 	pInit->pi16AccelXYZOffset[2] = 0;
+	pInit->i32Freq = 0;
 
 	pInit->UartSlaveInstance.pfvStateMachine = UartSlaveAccel_StateMachine;
 
@@ -204,18 +205,29 @@ void UartSlaveAccel_StateMachine(void *pSlaveDevice) {
 			switch (ComDef_xu8GetCommand(&buffer) & ComDefCommandMask) {
 			case (ComDefCommandMaskGet):
 				{
-					uint32_t payingIdeaOfSettingSamplingRateAs16Bit = 0;
-					xu32TimerWrapper_getFreq (ACCELDEVICE_INSTANCE, &payingIdeaOfSettingSamplingRateAs16Bit);
-					pPayloadTx_->u16SamplingRate = (uint16_t)payingIdeaOfSettingSamplingRateAs16Bit;
+					uint32_t actual_freq_hz = 0;
+					xu32TimerWrapper_getFreq (ACCELDEVICE_INSTANCE, &actual_freq_hz);
+					if (actual_freq_hz > 0xFFFF) {
+                        pPayloadTx_->u16SamplingRate = 0xFFFF; // Clamp to max uint16_t value
+                    } else {
+                        pPayloadTx_->u16SamplingRate = (uint16_t)actual_freq_hz;
+                    }
 				}
 				break;
 			case (ComDefCommandMaskSet):
 				{
-					uint32_t payingIdeaOfSettingSamplingRateAs16Bit = pPayloadRx_->u16SamplingRate;
-					xvTimerWrapper_SetFreq (ACCELDEVICE_INSTANCE, payingIdeaOfSettingSamplingRateAs16Bit);
-					xu32TimerWrapper_getFreq (ACCELDEVICE_INSTANCE, &payingIdeaOfSettingSamplingRateAs16Bit);
+					uint32_t requested_freq_hz = pPayloadRx_->u16SamplingRate;
+					xvTimerWrapper_SetFreq (ACCELDEVICE_INSTANCE, requested_freq_hz, 1 /* TIM9 is a 16-bit timer */);
 
-					pPayloadTx_->u16SamplingRate = (uint16_t)payingIdeaOfSettingSamplingRateAs16Bit;
+					// Report back the frequency that was actually set
+					uint32_t actual_freq_hz_set = 0;
+					xu32TimerWrapper_getFreq (ACCELDEVICE_INSTANCE, &actual_freq_hz_set);
+					if (actual_freq_hz_set > 0xFFFF) {
+                        pPayloadTx_->u16SamplingRate = 0xFFFF; // Clamp to max uint16_t value
+                    } else {
+                        pPayloadTx_->u16SamplingRate = (uint16_t)actual_freq_hz_set;
+                        pDevice->i32Freq = actual_freq_hz_set;
+                    }
 				}
 				break;
 			case (ComDefCommandMaskRet):

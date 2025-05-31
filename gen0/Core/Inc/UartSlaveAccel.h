@@ -21,6 +21,7 @@ typedef struct uart_slave_accel_s
 	Lowpass_TypeDef LowpassAccelX;
 	Lowpass_TypeDef LowpassAccelY;
 	Lowpass_TypeDef LowpassAccelZ;
+	int32_t i32Freq;
 } UartSlaveAccel_TypeDef;
 
 
