@@ -186,6 +186,8 @@ int main(void)
 
     	tim9_elapsed = 0;
     	cdc_data_received = 0;
+    	HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+
     	uartSlaveDevices [0] -> pfvStateMachine (uartSlaveDevices [0] );
 
     	end_tick  = DWT->CYCCNT;
@@ -275,6 +277,8 @@ void USB_CDC_RxHandler(uint8_t*pBuffer, uint32_t Length)
 	RingBuffer_Write_XBit(&uartSlaveAccelDevice.UartSlaveInstance.rxBufferManager, pBuffer, Length);
 //	tim9_elapsed = 1;
 	cdc_data_received = 1;
+
+	HAL_GPIO_TogglePin(LD4_GPIO_Port, LD4_Pin);
 }
 
 /* USER CODE END 4 */
